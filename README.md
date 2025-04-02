@@ -1,60 +1,69 @@
-## Legal
-During the launch of this solution, you will install software and dependencies. The software packages and/or sources you will install will be from the Amazon Linux distribution, as well as from third party sites. Below is the list of such third party software, the source link, and the license link for each software. Please review and decide your comfort with installing these before continuing. 
+## DEPLOYMENT GUIDE
 
-| Name | License |
-|-----------------------------------|------------------------------------| 
-| python-gitlab |  LGPL-3.0 license | 
-| jinja2 |  BSD-3-Clause license| 
-| pygments |   BSD-2-Clause license | 
+### 部署包含三个部分
+1. CDK部署前准备
+2. CDK部署
+3. CDK部署后操作
 
+---
 
-# Welcome to your CDK Python project!
+## 1. CDK部署前准备
 
-This is a blank project for CDK development with Python.
+### 1.1 权限与资源配置
+- 通过角色授予部署EC2管理员权限
+- EC2区域要求：us-east-1
+- 推荐EC2配置：
+  - 实例类型：t2.large
+  - 系统：Ubuntu 22.04 LTS
+  - 存储：EBS 200GB
+- 申请Bedrock服务权限（us-east-1区域）
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+### 1.2 环境准备
+```bash
+sudo apt update
+sudo apt install awscli
+aws configure  # 选择us-east-1区域
+sudo apt install npm
+sudo npm install -g n
+sudo n latest
+sudo npm -v
+sudo npm install -g aws-cdk
+python3 --version  # 需Python 3.10.12
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.bashrc
+nvm install 18.18.0
+nvm use 18.18.0
+node -v
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+1.3 代码包部署
 
-To manually create a virtualenv on MacOS and Linux:
-
-```
+tar xvf aws-codereview.tar.gz
+cd aws-codereview
 python3 -m venv .venv
-```
-
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
-
-```
 source .venv/bin/activate
-```
-
-Once the virtualenv is activated, you can install the required dependencies.
-
-```
 bash prepare.sh
-```
 
-At this point you can now synthesize the CloudFormation template for this code.
+2. CDK部署
 
-```
-cdk synth
-```
+# 每个区域只需执行一次
+cdk bootstrap aws://<your-account>/us-east-1
+cdk deploy
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
+3. CDK部署后操作
+3.1 Lambda配置
 
-## Useful commands
+通过控制台将以下Lambda函数加入预配置的VPC（需包含NAT网关并加入白名单）：
 
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
+    get_result_dev
+    code_review_dev
+    split_task_dev
+    code_review_post_dev
 
+3.2 VPC端点配置
+
+在预配置VPC中创建以下端点：
+服务类型	端点类型
+bedrock-runtime	接口端点
+sqs	接口端点
+dynamodb	网关端点
+s3	网关端点
