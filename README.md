@@ -69,3 +69,44 @@ cdk deploy
 - sqs	接口端点
 - dynamodb	网关端点
 - s3	网关端点
+
+## 4. 功能测试
+### 4.1 代码审查请求
+```bash
+import requests
+api_endpoint = "https://***/prod/"
+api_key = '******'
+
+data = {
+    "commitid": "****",
+    "repo_url": "https://***",
+    "access_token": "******",
+    "project": "***",
+    "branch": "***",
+    "scan_scope": "DIFF"
+}
+
+headers = {
+    'X-API-Key': api_key,
+    'Content-Type': 'application/json'
+}
+
+response = requests.post(api_endpoint + 'codereview', headers=headers, json=data)
+print(response.status_code, response.json())
+```
+
+### 4.2 结果查询
+```bash
+def get_review_records():
+    data_query = {
+        "page_index": 1,
+        "page_size": 10,
+        "commit_id": "*****",
+        "project": "****",
+        "branch": "****",
+        "scan_scope": "****",
+        "repo_url": "*****"
+    }
+    response = requests.post(api_endpoint + "getReviewRecords", headers=headers, json=data_query)
+    # 结果处理逻辑...
+```
