@@ -34,8 +34,9 @@ source ~/.bashrc
 nvm install 18.18.0
 nvm use 18.18.0
 node -v
+```bash
 
-1.3 代码包部署
+###1.3 代码包部署
 
 tar xvf aws-codereview.tar.gz
 cd aws-codereview
@@ -43,14 +44,14 @@ python3 -m venv .venv
 source .venv/bin/activate
 bash prepare.sh
 
-2. CDK部署
+##2. CDK部署
 
 # 每个区域只需执行一次
 cdk bootstrap aws://<your-account>/us-east-1
 cdk deploy
 
-3. CDK部署后操作
-3.1 Lambda配置
+##3. CDK部署后操作
+###3.1 Lambda配置
 
 通过控制台将以下Lambda函数加入预配置的VPC（需包含NAT网关并加入白名单）：
 
@@ -59,7 +60,7 @@ cdk deploy
     split_task_dev
     code_review_post_dev
 
-3.2 VPC端点配置
+###3.2 VPC端点配置
 
 在预配置VPC中创建以下端点：
 服务类型	端点类型
